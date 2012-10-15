@@ -38,4 +38,3 @@ def custom_phone(phone):
     except Exception, e:
         raw_phone = phone.strip().replace(' ','')
         return new_phone(raw_phone)
-

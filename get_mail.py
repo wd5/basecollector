@@ -14,15 +14,19 @@ def get_mail(site):
         except :
             print "На главной мыла не нашел"
             try:
-                g.go(g.xpath(u'//a[contains(text(), "онтакт")]').get('href'))
+                g.go(g.xpath('//a[contains(text(), "онтакт")]'.decode('utf8')).get('href'))
+                print u"Найден раздел контакты : %s" % g.xpath('//a[contains(text(), "онтакт")]'.decode('utf8')).get('href')
+                try:
+                    email = g.rex(re.compile("[-a-z0-9!#$%&'*+/=?^_`{|}~]+(\.[-a-z0-9!#$%&'*+/=?^_`{|}~]+)*@([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?\.)*([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?\.)*(aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-z][a-z])")).group()
+                except:
+                    print u"В разделе контакты мыло не найдено"
+            except:
+                print u"Раздел контакты не найден"
+            try:
+                g.go('http://' + site + '/contacts')
                 email = g.rex(re.compile("[-a-z0-9!#$%&'*+/=?^_`{|}~]+(\.[-a-z0-9!#$%&'*+/=?^_`{|}~]+)*@([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?\.)*([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?\.)*(aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-z][a-z])")).group()
             except :
-                print "Раздел контакты не найден"
-                try:
-                    g.go('http://' + site + '/contacts')
-                    email = g.rex(re.compile("[-a-z0-9!#$%&'*+/=?^_`{|}~]+(\.[-a-z0-9!#$%&'*+/=?^_`{|}~]+)*@([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?\.)*([a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?\.)*(aero|arpa|asia|biz|cat|com|coop|edu|gov|info|int|jobs|mil|mobi|museum|name|net|org|pro|tel|travel|[a-z][a-z])")).group()
-                except :
-                    print "Попытка пройти по /contacts не удалась"
+                print "Попытка пройти по /contacts не удалась"
         if not email:
             try:
                 g.go(g.xpath(u'//a[contains(text(), "нас")]').get('href'))
