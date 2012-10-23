@@ -25,7 +25,7 @@ def run():
     со страницы пиздим ссылки
      $('#block td a[target="_blank"]').each(function(key, value) {console.log($(value).attr('href'))})
     """
-    f = open('/home/hellpain/dev/siteparser/med_clinik/management/commands/links.txt', 'r')
+    f = open('links.txt', 'r')
     contacts = [
         {'name': u'Медицинские клиники',
          'city': u'Москва',
