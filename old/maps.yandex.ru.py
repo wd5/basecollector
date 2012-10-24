@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*
 from selenium import webdriver
 from selenium import selenium
-from api.models import Target, Phone
+from old import get_mail
+from old.api.models import Target, Phone
 import time
-import re
-from api.utils import custom_phone
-from get_mail import get_mail
 
 fp = webdriver.FirefoxProfile()
 fp.add_extension(extension='/Users/vladimir/PycharmProjects/basecollector/firebug-1.8.0.xpi')

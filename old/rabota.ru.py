@@ -3,8 +3,8 @@ import os
 import logging
 from grab import Grab
 import time
-import api.utils
-from api.models import Target, Phone
+import old.api.utils
+from old.api.models import Target, Phone
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -33,7 +33,7 @@ for page in xrange(0,1050,20):
                     phones = g2.xpath('//*[@class="pers pl15"]/p[' + str(count) + ']/text()').split(',')
                     for phone in phones:
                         if phone:
-                            if Phone.objects.filter(phone=api.utils.custom_phone(phone)):
+                            if Phone.objects.filter(phone=old.api.utils.custom_phone(phone)):
                                 repeat = True
                 elif u'Адрес' in contact.find('./span').text:
                     target.address = g2.xpath('//*[@class="pers pl15"]/p[' + str(count) + ']/text()').encode('utf-8')
@@ -47,9 +47,9 @@ for page in xrange(0,1050,20):
                 for phone in phones:
                     if phone:
                         print phone
-                        print api.utils.custom_phone(phone)
+                        print old.api.utils.custom_phone(phone)
                         try:
-                            Phone(phone=api.utils.custom_phone(phone), target = target).save()
+                            Phone(phone=old.api.utils.custom_phone(phone), target = target).save()
                         except Exception, e:
                             print "__________________@@@@@@@@@"
                             print e

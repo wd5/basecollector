@@ -59,5 +59,9 @@ def get_mail(site):
     print "-------------"
     return email
 
+
 def  clear_string(words):
-    return words.replace(u'\t', u'').replace(u'\n', u'').strip()
+    if words:
+        return words.replace(u'\t', u'').replace(u'\n', u'').strip()
+    else:
+        return words

@@ -25,7 +25,7 @@ def run():
     со страницы пиздим ссылки
      $('#block td a[target="_blank"]').each(function(key, value) {console.log($(value).attr('href'))})
     """
-    f = open('links.txt', 'r')
+    f = open('links_restorans.txt', 'r')
     contacts = [
         {'name': u'Медицинские клиники',
          'city': u'Москва',

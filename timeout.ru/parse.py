@@ -1,7 +1,8 @@
 #coding: utf-8
+from time import sleep
 from lxml import etree
 from grab import Grab
-from grab.error import GrabTimeoutError, DataNotFound
+from grab.error import *
 import json
 from utils import format_phone, get_mail, clear_string
 
@@ -21,12 +22,13 @@ parsed_packet_example = [
 ]
 _sitename = u'http://www.timeout.ru'
 _links_filename = 'links.txt'
-_output_filename = 'results_restorans.json'
+_output_filename = 'results__%s__%s.json'
+_save_evry = 100
 
 def create_links():
     u"""Создаем файл ссылок для последующего парсинга"""
     def parse_network(url):
-        u"""Для сети ресторанов возвращает ссылки на каждый ресторан из сети"""
+        u"""Для сети заведений возвращает ссылки на каждое заведение из сети"""
         gg  = Grab()
         gg.go(url)
         network_links_list = []
@@ -38,7 +40,7 @@ def create_links():
 
     g = Grab()
     try:
-        g.go(_sitename+'/restaurant/list/71/page/1:30/')
+        g.go(_sitename+'/books/list/51/page/1:100/')
     except GrabTimeoutError:
         print u'time out'
         exit()
@@ -60,21 +62,36 @@ def create_links():
 
 
 def parse():
+    u"""Из каждой ссылки выдирает информацию о компании"""
+    def save(results, start, end):
+        u"""Сохраняет результаты в файл"""
+        text = json.dumps(contacts)
+        f = open(_output_filename % (start, end), 'w')
+        f.write(text)
+        f.close()
+
     contacts = [
-        {'name': u'Рестораны и бары',
+        {'name': u'Книжные магазины',
          'city': u'Москва',
-         'additional': u'',
+         'additional': u'Книжные магазины',
          'companies': [],
          }
     ]
-    f = open('links.txt', 'r')
-    for url in f.readlines():
-        print url
+    f = open(_links_filename, 'r')
+    file_length = len(f.readlines())
+    f.close()
+    f = open(_links_filename, 'r')
+    start_line = 0
+    last_saved = start_line
+    for count, url in enumerate(f.readlines()[start_line:], start=start_line):
+        print u'%d. %s' % (count, url)
         g = Grab()
         try:
             g.go(url)
-        except GrabTimeoutError:
-            continue
+        except (GrabNetworkError, GrabTimeoutError, GrabConnectionError, GrabAuthError) as details:
+            print details
+            save(contacts, start_line, count)
+            break
         company = dict()
         try:
             company['name'] = clear_string(g.xpath('//div[@class="headingH2"]/h1').text)
@@ -89,16 +106,25 @@ def parse():
             pass
 
         contacts[0]['companies'].append(company)
-    text = json.dumps(contacts)
-    f = open(_output_filename, 'w')
-    f.write(text)
-    f.close()
+
+        #защита от вылета. сохраняем каждые _save_evry и не сохраняем на первой
+        if (count-start_line) % _save_evry == 0 and (count != start_line):
+            save(contacts, last_saved, count)
+            last_saved = count
+            contacts[0]['companies'] = []
+        #сохраняем в конце
+        if (count + 1) == file_length:
+            save(contacts, last_saved, count)
+            contacts[0]['companies'] = []
+
+        sleep(0.1)
 
 def beautify():
+    u"""По-русски вывести json"""
     convert_json = open(_output_filename).read().decode("unicode_escape").encode("utf8")
     open(_output_filename, 'wb').write(convert_json)
 
 if __name__ == '__main__':
-#    create_links()
+    create_links()
     parse()
 #    beautify()

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-from grab import Grab, base
+from grab import Grab
 from lxml import etree
-import logging
 import os
 import re
 import time
-from api.utils import custom_phone
-from api.models import Target, Phone
+from old.api.utils import custom_phone
+from old.api.models import Target, Phone
 
 #logging.basicConfig(level=logging.DEBUG)
 
