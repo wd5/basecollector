@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*
 from selenium import webdriver
-from old.api.models2 import Company_DB, Phone_Company_DB
+from api.models2 import Company_DB, Phone_Company_DB
 import time
-from old.api.utils import custom_phone
+from api.utils import custom_phone
 
 i = 100 # Число страниц
 

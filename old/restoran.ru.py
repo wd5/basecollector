@@ -4,8 +4,8 @@ from lxml import etree
 import os
 import re
 import time
-from old.api.utils import custom_phone
-from old.api.models import Target, Phone
+from api.utils import custom_phone
+from api.models import Target, Phone
 
 #logging.basicConfig(level=logging.DEBUG)
 

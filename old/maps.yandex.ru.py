@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*
 from selenium import webdriver
 from selenium import selenium
-from old import get_mail
-from old.api.models import Target, Phone
+from api.utils import get_mail
+from api.models import Target, Phone
 import time
 
 fp = webdriver.FirefoxProfile()
