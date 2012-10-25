@@ -16,14 +16,22 @@ parsed_packet_example = [
           'url': u'',
           'email': u'',
           'phones': [u'',],
+          'additional': u'',
           }
      ]
     }
 ]
-_sitename = u'http://www.timeout.ru'
+
 _links_filename = 'links.txt'
 _output_filename = 'results__%s__%s.json'
-_save_evry = 100
+_save_evry = 200
+_sitename = u'http://www.timeout.ru'
+#_link_postfix = u'/books/list/51/page/1:100/' #книжные магазины
+#_link_postfix = u'/fashion/list/49/page/1:3000/' #Магазины Москвы
+#_link_postfix = u'/restaurant/list/71/page/1:3000/' #Рестораны Москвы
+#_link_postfix = u'/beauty/list/316/filter/t:201/page/1:200/' #Салоны красоты в Москве
+#_link_postfix = u'/theatre/list/1/page/1:400/' #Театры Москвы
+_link_postfix = u'/exhibition/list/7/page/1:3000/' #Музеи Москвы
 
 def create_links():
     u"""Создаем файл ссылок для последующего парсинга"""
@@ -40,7 +48,7 @@ def create_links():
 
     g = Grab()
     try:
-        g.go(_sitename+'/books/list/51/page/1:100/')
+        g.go(_sitename+_link_postfix)
     except GrabTimeoutError:
         print u'time out'
         exit()
@@ -71,9 +79,9 @@ def parse():
         f.close()
 
     contacts = [
-        {'name': u'Книжные магазины',
+        {'name': u'Музеи Москвы',
          'city': u'Москва',
-         'additional': u'Книжные магазины',
+         'additional': u'Список музеев, галерей и выставочных залов Москвы',
          'companies': [],
          }
     ]
@@ -81,7 +89,7 @@ def parse():
     file_length = len(f.readlines())
     f.close()
     f = open(_links_filename, 'r')
-    start_line = 0
+    start_line = 268
     last_saved = start_line
     for count, url in enumerate(f.readlines()[start_line:], start=start_line):
         print u'%d. %s' % (count, url)
@@ -90,7 +98,7 @@ def parse():
             g.go(url)
         except (GrabNetworkError, GrabTimeoutError, GrabConnectionError, GrabAuthError) as details:
             print details
-            save(contacts, start_line, count)
+            save(contacts, last_saved, count)
             break
         company = dict()
         try:
@@ -98,6 +106,9 @@ def parse():
             company['address'] = clear_string(g.xpath('//span[@class="street-address"]').text)
             company['url'] = clear_string(g.xpath('//p/noindex/a').text) or u''
             company['email'] = get_mail(company['url']) or u''
+            additional = g.xpath('//div[@class="contento-text"]')
+            additional = etree.tostring(additional, encoding=unicode, method="text")
+            company['additional'] = clear_string(additional)
             raw_phone = clear_string(g.xpath('//span[@class="tel"]').text)
             company['phones'] = []
             for phone in raw_phone.split(','):
@@ -108,7 +119,7 @@ def parse():
         contacts[0]['companies'].append(company)
 
         #защита от вылета. сохраняем каждые _save_evry и не сохраняем на первой
-        if (count-start_line) % _save_evry == 0 and (count != start_line):
+        if count % _save_evry == 0 and (count != start_line):
             save(contacts, last_saved, count)
             last_saved = count
             contacts[0]['companies'] = []
