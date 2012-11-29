@@ -1,0 +1,3 @@
+pip install grab
+sudo apt-get install curl libxml2 libxml2-dev libxslt1.1 libxslt1-dev
+pip install lxml
