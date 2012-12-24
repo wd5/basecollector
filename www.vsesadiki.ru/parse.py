@@ -24,17 +24,24 @@ parsed_packet_example = [
 
 _links_filename = 'links.txt'
 _output_filename = 'results__%s__%s.json'
-_save_evry = 300
+_save_evry = 200
 
-START_LINE = 1327 #НАЧИНАЕМ С НУЛЯ ИЛИ ВЫСТАВЛЯЕМ НА НУЖНУЮ ПОЗИЦИЮ ПОСЛЕ ВЫЛЕТА
+START_LINE = 0 #НАЧИНАЕМ С НУЛЯ ИЛИ ВЫСТАВЛЯЕМ НА НУЖНУЮ ПОЗИЦИЮ ПОСЛЕ ВЫЛЕТА
+_sitename = u'http://www.vsesadiki.ru/'
 
-_sitename = u'http://www.timeout.ru'
-#_link_postfix = u'/books/list/51/page/1:100/' #книжные магазины
-_link_postfix = u'/fashion/list/49/page/1:3000/' #Магазины Москвы
-#_link_postfix = u'/restaurant/list/71/page/1:3000/' #Рестораны Москвы
-#_link_postfix = u'/beauty/list/316/filter/t:201/page/1:200/' #Салоны красоты в Москве
-#_link_postfix = u'/theatre/list/1/page/1:400/' #Театры Москвы
-#_link_postfix = u'/exhibition/list/7/page/1:3000/' #Музеи Москвы
+
+u'''
+Подключаем jquery на сайт
+var newScript = document.createElement("script");
+newScript.type = "text/javascript";
+newScript.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js";
+var first = document.getElementsByTagName("head")[0].firstChild;
+document.getElementsByTagName("head")[0].insertBefore(newScript, first);
+
+со страницы пиздим ссылки
+$('.joomlatable a').each(function (index) { console.log($(this).attr('href')) } );
+'''
+
 
 def create_links():
     u"""Создаем файл ссылок для последующего парсинга"""
@@ -57,7 +64,7 @@ def create_links():
 
     g = Grab()
     try:
-        g.go(_sitename+_link_postfix)
+        g.go(_sitename)
     except GrabTimeoutError:
         print u'time out'
         exit()
@@ -89,7 +96,7 @@ def parse():
         f.close()
 
     contacts = [
-        {'name': u'Магазины',
+        {'name': u'Частные детские сады',
          'city': u'Москва',
          'additional': u'',
          'companies': [],
@@ -104,24 +111,25 @@ def parse():
         print u'%d. %s' % (count, url)
         g = Grab()
         try:
-            g.go(url)
+            g.go(_sitename + url)
         except (GrabNetworkError, GrabTimeoutError, GrabConnectionError, GrabAuthError) as details:
             print details
             save(contacts, last_saved, count)
             break
         company = dict()
         try:
-            company['name'] = clear_string(g.xpath('//div[@class="headingH2"]/h1').text)
-            company['address'] = clear_string(g.xpath('//span[@class="street-address"]').text)
-            company['url'] = clear_string(g.xpath('//p/noindex/a').text) or u''
-            company['email'] = get_mail(company['url']) or u''
-            additional = g.xpath('//div[@class="contento-text"]')
-            additional = etree.tostring(additional, encoding=unicode, method="text")
-            company['additional'] = clear_string(additional)
-            raw_phone = clear_string(g.xpath('//span[@class="tel"]').text)
-            company['phones'] = []
-            for phone in raw_phone.split(','):
-                company['phones'].append(format_phone(phone))
+            company['name'] = clear_string(g.xpath('//h1[@class="title"]').text)
+            info = g.xpath_list('//div[@class="jwts_tabbertab"]/p')
+            for some_info in info:
+                if not some_info.text:
+                    continue
+                if u'Телефон' in some_info.text:
+                    company['phones'] = []
+                    for phone in some_info.text.split(u','):
+                        company['phones'].append(format_phone(phone))
+                if u'Адрес' in some_info.text:
+                    company['address'] = clear_string(some_info.text)
+            company['url'] = clear_string(g.xpath('//div[@class="jwts_tabbertab"]/p/a').text) or u''
         except DataNotFound:
             pass
 
@@ -133,9 +141,8 @@ def parse():
             last_saved = count
             contacts[0]['companies'] = []
         #сохраняем в конце
-        if (count + 1) == file_length:
+        if count + 1 == file_length:
             save(contacts, last_saved, count)
-            contacts[0]['companies'] = []
 
         sleep(0.2)
 
